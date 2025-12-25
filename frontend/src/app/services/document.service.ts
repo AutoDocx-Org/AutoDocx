@@ -5,30 +5,30 @@ import { GenerateDocumentRequest, DocumentResponse } from '../models/document.mo
 import { environment } from '../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class DocumentService {
-  private apiUrl = `${environment.apiUrl}/documents`;
+    private apiUrl = `${environment.apiUrl}/documents`;
 
-  constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
-  generate(request: GenerateDocumentRequest): Observable<DocumentResponse> {
-    return this.http.post<DocumentResponse>(`${this.apiUrl}/generate`, request);
-  }
+    generate(request: GenerateDocumentRequest): Observable<DocumentResponse> {
+        return this.http.post<DocumentResponse>(`${this.apiUrl}/generate`, request);
+    }
 
-  downloadWord(documentId: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/${documentId}/download/word`, {
-      responseType: 'blob'
-    });
-  }
+    downloadWord(documentId: string): Observable<Blob> {
+        return this.http.get(`${this.apiUrl}/${documentId}/download/word`, {
+            responseType: 'blob'
+        });
+    }
 
-  downloadPdf(documentId: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/${documentId}/download/pdf`, {
-      responseType: 'blob'
-    });
-  }
+    downloadPdf(documentId: string): Observable<Blob> {
+        return this.http.get(`${this.apiUrl}/${documentId}/download/pdf`, {
+            responseType: 'blob'
+        });
+    }
 
-  getPreviewUrl(documentId: string): string {
-    return `${environment.apiUrl}/documents/${documentId}/preview`;
-  }
+    getPreviewUrl(documentId: string): string {
+        return `${environment.apiUrl}/documents/${documentId}/preview`;
+    }
 }

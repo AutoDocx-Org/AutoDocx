@@ -1,31 +1,31 @@
 <div class="template-list-container">
-  <div class="header">
-    <h1>Templates</h1>
-    <button (click)="createTemplate()" class="btn-primary">Create Template</button>
-  </div>
-
-  <div *ngIf="loading" class="loading">Loading templates...</div>
-
-  <div *ngIf="error" class="error">{{ error }}</div>
-
-  <div class="templates-grid" *ngIf="!loading && templates.length > 0">
-    <div *ngFor="let template of templates" class="template-card">
-      <h3>{{ template.name }}</h3>
-      <p>{{ template.description }}</p>
-      <div class="template-meta">
-        <span>{{ template.fields.length }} fields</span>
-        <span>Created: {{ template.createdAt | date }}</span>
-      </div>
-      <div class="template-actions">
-        <button (click)="useTemplate(template.id)" class="btn-primary">Use</button>
-        <button (click)="editTemplate(template.id)" class="btn-secondary">Edit</button>
-        <button (click)="deleteTemplate(template.id)" class="btn-danger">Delete</button>
-      </div>
+    <div class="header">
+        <h1>Templates</h1>
+        <button (click)="createTemplate()" class="btn-primary">Create Template</button>
     </div>
-  </div>
 
-  <div *ngIf="!loading && templates.length === 0" class="empty-state">
-    <p>No templates found. Create your first template!</p>
-    <button (click)="createTemplate()" class="btn-primary">Create Template</button>
-  </div>
+    <div *ngIf="loading" class="loading">Loading templates...</div>
+
+    <div *ngIf="error" class="error">{{ error }}</div>
+
+    <div class="templates-grid" *ngIf="!loading && templates.length > 0">
+        <div *ngFor="let template of templates" class="template-card">
+            <h3>{{ template.name }}</h3>
+            <p>{{ template.description }}</p>
+            <div class="template-meta">
+                <span>{{ template.fields.length }} fields</span>
+                <span>Created: {{ template.createdAt | date }}</span>
+            </div>
+            <div class="template-actions">
+                <button (click)="useTemplate(template.id)" class="btn-primary">Use</button>
+                <button (click)="editTemplate(template.id)" class="btn-secondary">Edit</button>
+                <button (click)="deleteTemplate(template.id)" class="btn-danger">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="!loading && templates.length === 0" class="empty-state">
+        <p>No templates found. Create your first template!</p>
+        <button (click)="createTemplate()" class="btn-primary">Create Template</button>
+    </div>
 </div>
