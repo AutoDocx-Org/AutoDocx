@@ -30,7 +30,10 @@ AutoDocx/
 # To run the backend:
 cd backend/AutoDocx.API
 dotnet restore
-dotnet ef migrations add InitialCreate --project ..\AutoDocx.Infrastructure
+# On macOS / Linux:
+dotnet ef migrations add InitialCreate --project ../AutoDocx.Infrastructure
+# On Windows (PowerShell/CMD):
+# dotnet ef migrations add InitialCreate --project ..\AutoDocx.Infrastructure
 dotnet ef database update
 dotnet run
 
