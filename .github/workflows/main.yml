@@ -4,6 +4,11 @@ on: [push]
 jobs:
   build_and_deploy:
     runs-on: windows-latest
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_USER: ${{ secrets.FTP_USER }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
     steps:
       - uses: actions/checkout@v4
 
@@ -51,9 +56,9 @@ jobs:
         if: ${{ secrets.FTP_HOST != '' }}
         uses: SamKirkland/FTP-Deploy-Action@4.3.1
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          server: ${{ env.FTP_HOST }}
+          username: ${{ env.FTP_USER }}
+          password: ${{ env.FTP_PASSWORD }}
           protocol: ftps
           local-dir: ./backend/publish
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          server-dir: ${{ env.FTP_SERVER_DIR }}
