@@ -13,16 +13,30 @@ jobs:
           dotnet-version: 8.0
           
       - name: Install dependencies
+        working-directory: ./backend
         run: dotnet restore
-        
+
       - name: Build
-        run: dotnet build ./backend/AutoDocx.sln --configuration Release --no-restore
+        working-directory: ./backend
+        run: dotnet build AutoDocx.sln --configuration Release --no-restore
 
       - name: Publish
-        run: dotnet publish ./backend/AutoDocx.sln --configuration Release --output ./publish --runtime win-x86 
-        
-      - name: Test with .NET
-        run: dotnet AutoDocx
+        working-directory: ./backend
+        run: dotnet publish AutoDocx.sln --configuration Release --output ./publish --runtime win-x86 
+
+      - name: Smoke run API
+        working-directory: ./backend
+        run: |
+          dotnet run --project ./AutoDocx.API/AutoDocx.API.csproj --configuration Release --urls "http://localhost:5005" &
+          pid=$!
+          for i in $(seq 1 15); do
+            if curl -sS http://localhost:5005/ >/dev/null; then
+              echo "API responded"
+              break
+            fi
+            sleep 1
+          done
+          kill $pid || true
 
       - name: Deploy to MonsterASP.NET via WebDeploy
         uses: rasmusbuchholdt/simply-web-deploy@2.1.0
