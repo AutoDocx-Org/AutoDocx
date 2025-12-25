@@ -1,4 +1,4 @@
-# AutoDocx
+# AutoDocx Test
 
 Dynamic document generation platform built with ASP.NET Core 8 and Angular.
 
