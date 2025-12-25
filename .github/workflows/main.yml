@@ -53,7 +53,7 @@ jobs:
           server-password: ${{ secrets.SERVER_PASSWORD }}
 
       - name: FTPS deploy (fallback)
-        if: ${{ secrets.FTP_HOST != '' }}
+        if: ${{ env.FTP_HOST != '' }}
         uses: SamKirkland/FTP-Deploy-Action@4.3.1
         with:
           server: ${{ env.FTP_HOST }}
