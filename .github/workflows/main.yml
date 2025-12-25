@@ -26,6 +26,7 @@ jobs:
 
       - name: Smoke run API
         working-directory: ./backend
+        shell: bash
         run: |
           dotnet run --project ./AutoDocx.API/AutoDocx.API.csproj --configuration Release --urls "http://localhost:5005" &
           pid=$!
