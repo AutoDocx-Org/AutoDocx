@@ -1,0 +1,29 @@
+# Storage directories
+backend/AutoDocx.API/Storage/
+backend/AutoDocx.API/temp/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.dll
+*.pdb
+*.exe
+.vs/
+.vscode/
+
+# Angular
+node_modules/
+dist/
+.angular/
+*.log
+
+# Environment files
+*.env
+appsettings.Development.json
+
+# OS
+.DS_Store
+Thumbs.db
