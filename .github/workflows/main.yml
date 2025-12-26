@@ -14,11 +14,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup .NET 8
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 8.0
-          
+      - name: Install .NET 8 (resilient)
+        shell: pwsh
+        run: |
+          $max = 3
+          $installDir = Join-Path $env:RUNNER_TEMP 'dotnet'
+          $scriptUrl = 'https://dot.net/v1/dotnet-install.ps1'
+          $installed = $false
+          for ($i = 1; $i -le $max; $i++) {
+            try {
+              Write-Host "Installing .NET (attempt $i/$max)..."
+              if (Test-Path 'dotnet-install.ps1') { Remove-Item 'dotnet-install.ps1' -Force -ErrorAction SilentlyContinue }
+              Invoke-WebRequest -Uri $scriptUrl -OutFile 'dotnet-install.ps1' -UseBasicParsing -ErrorAction Stop
+              & .\dotnet-install.ps1 -Channel 8.0 -InstallDir $installDir -NoPath -ErrorAction Stop
+
+              # Make it available to subsequent steps
+              Add-Content -Path $env:GITHUB_PATH -Value $installDir
+              Add-Content -Path $env:GITHUB_ENV -Value "DOTNET_ROOT=$installDir"
+
+              Write-Host 'Verifying dotnet...'
+              & (Join-Path $installDir 'dotnet.exe') --info
+              $installed = $true
+              break
+            } catch {
+              Write-Host "Attempt $i failed: $_"
+              if ($i -lt $max) { Start-Sleep -Seconds (5 * $i) }
+            }
+          }
+          if (-not $installed) { throw 'Failed to install .NET after retries' }
       - name: Install dependencies
         working-directory: ./backend
         run: dotnet restore
