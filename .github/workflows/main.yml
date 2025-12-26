@@ -9,6 +9,8 @@ jobs:
       FTP_USER: ${{ secrets.FTP_USER }}
       FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
       FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
+    outputs:
+      msdeploy_success: ${{ steps.msdeploy.outputs.msdeploy_success }}
     steps:
       - uses: actions/checkout@v4
 
@@ -86,7 +88,7 @@ jobs:
 
           if ($rc -eq 0) {
             Write-Host "msdeploy succeeded (auto/contentPath)"
-            Add-Content -Path $env:GITHUB_ENV -Value "MSDEPLOY_SUCCESS=true"
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "msdeploy_success=true"
             exit 0
           }
 
@@ -98,12 +100,12 @@ jobs:
           $rc2 = $LASTEXITCODE
           if ($rc2 -eq 0) {
             Write-Host "msdeploy succeeded (dirPath)"
-            Add-Content -Path $env:GITHUB_ENV -Value "MSDEPLOY_SUCCESS=true"
+            Add-Content -Path $env:GITHUB_OUTPUT -Value "msdeploy_success=true"
             exit 0
           }
 
           Write-Error "msdeploy failed (auto exit code $rc, dirPath exit code $rc2)."
-          Add-Content -Path $env:GITHUB_ENV -Value "MSDEPLOY_SUCCESS=false"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "msdeploy_success=false"
           exit 1
 
       - name: FTPS deploy (fallback)
@@ -116,3 +118,32 @@ jobs:
           protocol: ftps
           local-dir: ./backend/publish/
           server-dir: ${{ env.FTP_SERVER_DIR }}
+
+  deploy_with_lftp:
+    name: Deploy with lftp (Ubuntu)
+    runs-on: ubuntu-latest
+    needs: build_and_deploy
+    if: needs.build_and_deploy.outputs.msdeploy_success != 'true' && env.FTP_HOST != ''
+    env:
+      FTP_HOST: ${{ secrets.FTP_HOST }}
+      FTP_USER: ${{ secrets.FTP_USER }}
+      FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+      FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: Dry-run upload (list files to upload)
+        run: |
+          echo "Starting dry-run to $FTP_HOST:$FTP_SERVER_DIR"
+          lftp -u "$FTP_USER","$FTP_PASSWORD" $FTP_HOST -e "set ssl:verify-certificate no; set ftp:passive-mode true; mirror -R --dry-run ./backend/publish $FTP_SERVER_DIR --parallel=2 --verbose; bye"
+
+      - name: Upload with lftp
+        run: |
+          echo "Uploading ./backend/publish to $FTP_HOST:$FTP_SERVER_DIR"
+          lftp -u "$FTP_USER","$FTP_PASSWORD" $FTP_HOST -e "set ssl:verify-certificate no; set ftp:passive-mode true; mirror -R ./backend/publish $FTP_SERVER_DIR --continue --parallel=2 --verbose; bye"
+
