@@ -60,13 +60,23 @@ jobs:
           WEBSITE_PASSWORD: ${{ secrets.WEBSITE_PASSWORD }}
         run: |
           $package = Join-Path $env:GITHUB_WORKSPACE 'backend\publish\package.zip'
+          if (-not (Test-Path $package)) { Write-Error "Package not found: $package"; exit 1 }
           $msdeployPaths = @(
             "$env:ProgramFiles\IIS\Microsoft Web Deploy V3\msdeploy.exe",
             "$env:ProgramFiles(x86)\IIS\Microsoft Web Deploy V3\msdeploy.exe"
           )
           $msdeploy = $msdeployPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
           if (-not $msdeploy) { Write-Error 'msdeploy.exe not found on runner'; exit 1 }
-          & $msdeploy -verb:sync -source:package="$package" -dest:auto,computerName="$env:SERVICE_URL",username="$env:WEBSITE_USER",password="$env:WEBSITE_PASSWORD",authtype="Basic" -allowUntrusted
+          if (-not $env:SERVICE_URL -or -not $env:WEBSITE_USER -or -not $env:WEBSITE_PASSWORD) {
+            Write-Error 'Missing SERVICE_URL or WEBSITE_USER or WEBSITE_PASSWORD secret'; exit 1
+          }
+          $svc = $env:SERVICE_URL
+          $user = $env:WEBSITE_USER
+          $pass = $env:WEBSITE_PASSWORD
+          $sourceArg = "package='$package'"
+          $destArg = "auto,computerName='$svc',username='$user',password='$pass',authtype='Basic'"
+          Write-Host "Deploying package $package to $svc as $user"
+          & $msdeploy -verb:sync "-source:$sourceArg" "-dest:$destArg" -allowUntrusted
 
       - name: FTPS deploy (fallback)
         if: ${{ env.FTP_HOST != '' }}
