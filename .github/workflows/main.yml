@@ -109,7 +109,7 @@ jobs:
           exit 1
 
       - name: FTPS deploy (fallback)
-        if: ${{ secrets.FTP_HOST != '' && steps.msdeploy.outputs.msdeploy_success != 'true' }}
+        if: ${{ env.FTP_HOST != '' && steps.msdeploy.outputs.msdeploy_success != 'true' }}
         uses: SamKirkland/FTP-Deploy-Action@4.3.1
         with:
           server: ${{ env.FTP_HOST }}
@@ -123,7 +123,7 @@ jobs:
     name: Deploy with lftp (Ubuntu)
     runs-on: ubuntu-latest
     needs: build_and_deploy
-    if: ${{ needs.build_and_deploy.outputs.msdeploy_success != 'true' && secrets.FTP_HOST != '' }}
+    if: ${{ needs.build_and_deploy.outputs.msdeploy_success != 'true' }}
     env:
       FTP_HOST: ${{ secrets.FTP_HOST }}
       FTP_USER: ${{ secrets.FTP_USER }}
