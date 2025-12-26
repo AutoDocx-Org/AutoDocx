@@ -57,6 +57,7 @@ dotnet run --project AutoDocx.API
 ```
 
 API will be available at: `http://localhost:5000`
+delpoyed : http://chetandeo-001-site1.stempurl.com/
 
 ## Frontend (Angular)
 
