@@ -11,6 +11,7 @@ jobs:
       FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
     outputs:
       msdeploy_success: ${{ steps.msdeploy.outputs.msdeploy_success }}
+      deploy_success: ${{ steps.set_deploy_outcome.outputs.deploy_success }}
     steps:
       - uses: actions/checkout@v4
 
