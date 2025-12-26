@@ -76,6 +76,8 @@ jobs:
           username: ${{ env.FTP_USER }}
           password: ${{ env.FTP_PASSWORD }}
           protocol: ftps
+          timeout: 60000
+          security: loose
           local-dir: ./backend/publish/
           server-dir: /Site1/
 
