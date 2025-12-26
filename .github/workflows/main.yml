@@ -77,8 +77,7 @@ jobs:
           server: ${{ env.FTP_HOST }}
           username: ${{ env.FTP_USER }}
           password: ${{ env.FTP_PASSWORD }}
-          protocol: ftps-legacy
-          port: 990
+          protocol: ftps
           security: loose
           local-dir: ./backend/publish/
           server-dir: /Site1/
@@ -90,8 +89,7 @@ jobs:
           server: ${{ env.FTP_HOST }}
           username: ${{ env.FTP_USER }}
           password: ${{ env.FTP_PASSWORD }}
-          protocol: ftps-legacy
-          port: 990
+          protocol: ftps
           security: loose
           local-dir: ./backend/publish/
           server-dir: /Site1/
