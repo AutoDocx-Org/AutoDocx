@@ -69,6 +69,25 @@ jobs:
           done
           kill $pid || true
 
+      - name: Upload app_offline.htm to stop IIS
+        shell: pwsh
+        run: |
+          Install-Module -Name Posh-FTP -Force -Scope CurrentUser -ErrorAction SilentlyContinue
+          $secPwd = ConvertTo-SecureString "${{ env.FTP_PASSWORD }}" -AsPlainText -Force
+          $cred = New-Object System.Management.Automation.PSCredential("${{ env.FTP_USER }}", $secPwd)
+          try {
+            Set-FTPConnection -Server "${{ env.FTP_HOST }}" -Credentials $cred -Session "MainSession" -UseSSL -UseBinary
+            Add-FTPItem -Session "MainSession" -LocalPath "./app_offline.htm" -RemotePath "/Site1/app_offline.htm" -Overwrite
+            Write-Host "app_offline.htm uploaded - IIS will stop the app"
+          } catch {
+            Write-Host "Failed to upload app_offline.htm: $_"
+          }
+        continue-on-error: true
+
+      - name: Wait for IIS to release files
+        run: Start-Sleep -Seconds 10
+        shell: pwsh
+
       - name: FTPS Deploy
         uses: SamKirkland/FTP-Deploy-Action@4.3.1
         continue-on-error: true
@@ -82,6 +101,11 @@ jobs:
           local-dir: ./backend/publish/
           server-dir: /Site1/
 
+      - name: Wait before retry
+        if: steps.ftps_deploy_attempt1.outcome == 'failure'
+        run: Start-Sleep -Seconds 30
+        shell: pwsh
+
       - name: FTPS Deploy (Retry)
         if: steps.ftps_deploy_attempt1.outcome == 'failure'
         uses: SamKirkland/FTP-Deploy-Action@4.3.1
@@ -93,5 +117,19 @@ jobs:
           security: loose
           local-dir: ./backend/publish/
           server-dir: /Site1/
+
+      - name: Remove app_offline.htm to restart IIS
+        shell: pwsh
+        run: |
+          $secPwd = ConvertTo-SecureString "${{ env.FTP_PASSWORD }}" -AsPlainText -Force
+          $cred = New-Object System.Management.Automation.PSCredential("${{ env.FTP_USER }}", $secPwd)
+          try {
+            Set-FTPConnection -Server "${{ env.FTP_HOST }}" -Credentials $cred -Session "MainSession" -UseSSL -UseBinary
+            Remove-FTPItem -Session "MainSession" -RemotePath "/Site1/app_offline.htm"
+            Write-Host "app_offline.htm removed - site is back online"
+          } catch {
+            Write-Host "Failed to remove app_offline.htm: $_"
+          }
+        continue-on-error: true
 
 
