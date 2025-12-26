@@ -75,6 +75,6 @@ jobs:
           password: ${{ env.FTP_PASSWORD }}
           protocol: ftps
           local-dir: ./backend/publish/
-          server-dir: ${{ env.FTP_SERVER_DIR }}
+          server-dir: /Site1/
 
 
