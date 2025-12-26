@@ -44,13 +44,14 @@ jobs:
           done
           kill $pid || true
 
-      - name: Deploy to MonsterASP.NET via WebDeploy
-        uses: rasmusbuchholdt/simply-web-deploy@2.1.0
+      - name: SmarterASP.NET Web Deploy
+        uses: pdr-st/smarterasp-net-web-deploy@v1.1.0
         with:
           website-name: ${{ secrets.WEBSITE_NAME }}
           server-computer-name: ${{ secrets.SERVER_COMPUTER_NAME }}
           server-username: ${{ secrets.SERVER_USERNAME }}
           server-password: ${{ secrets.SERVER_PASSWORD }}
+          source-path: './publish'
 
       - name: FTPS deploy (fallback)
         if: ${{ env.FTP_HOST != '' }}
