@@ -53,7 +53,9 @@ jobs:
           Compress-Archive -Path (Join-Path $publishDir '*') -DestinationPath $package -Force
 
       - name: Deploy to SmarterASP (Web Deploy)
+        id: msdeploy
         shell: pwsh
+        continue-on-error: true
         env:
           SERVICE_URL: ${{ secrets.SERVICE_URL }}    # e.g. https://win8114.site4now.net:8172/MsDeploy.axd?site=chetandeo-001-site1
           WEBSITE_USER: ${{ secrets.WEBSITE_USER }}
@@ -73,13 +75,39 @@ jobs:
           $svc = $env:SERVICE_URL
           $user = $env:WEBSITE_USER
           $pass = $env:WEBSITE_PASSWORD
+          Write-Host "msdeploy found at: $msdeploy"
+
+          # First try the standard package -> auto (contentPath) approach
+          Write-Host "Attempting msdeploy (auto/contentPath)"
           $sourceArg = "package='$package'"
           $destArg = "auto,computerName='$svc',username='$user',password='$pass',authtype='Basic'"
-          Write-Host "Deploying package $package to $svc as $user"
-          & $msdeploy -verb:sync "-source:$sourceArg" "-dest:$destArg" -allowUntrusted
+          & $msdeploy -verb:sync "-source:$sourceArg" "-dest:$destArg" -allowUntrusted -verbose
+          $rc = $LASTEXITCODE
+
+          if ($rc -eq 0) {
+            Write-Host "msdeploy succeeded (auto/contentPath)"
+            Add-Content -Path $env:GITHUB_ENV -Value "MSDEPLOY_SUCCESS=true"
+            exit 0
+          }
+
+          Write-Host "msdeploy (auto) failed with exit code $rc. Trying dirPath to mapped host path..."
+          # Use the mapped physical path you provided
+          $targetPath = "h:\root\home\chetandeo-001\www\site1"
+          Write-Host "Attempting dirPath -> $targetPath"
+          & $msdeploy -verb:sync "-source:$sourceArg" "-dest:dirPath='$targetPath',computerName='$svc',username='$user',password='$pass',authtype='Basic'" -allowUntrusted -verbose
+          $rc2 = $LASTEXITCODE
+          if ($rc2 -eq 0) {
+            Write-Host "msdeploy succeeded (dirPath)"
+            Add-Content -Path $env:GITHUB_ENV -Value "MSDEPLOY_SUCCESS=true"
+            exit 0
+          }
+
+          Write-Error "msdeploy failed (auto exit code $rc, dirPath exit code $rc2)."
+          Add-Content -Path $env:GITHUB_ENV -Value "MSDEPLOY_SUCCESS=false"
+          exit 1
 
       - name: FTPS deploy (fallback)
-        if: ${{ env.FTP_HOST != '' }}
+        if: ${{ env.FTP_HOST != '' && env.MSDEPLOY_SUCCESS != 'true' }}
         uses: SamKirkland/FTP-Deploy-Action@4.3.1
         with:
           server: ${{ env.FTP_HOST }}
