@@ -1,0 +1,122 @@
+<div class="field-builder">
+    <div class="fields-header">
+        <h3>Template Fields</h3>
+        <button type="button" (click)="addField()" class="btn-add">
+            + Add Field
+        </button>
+    </div>
+
+    <div *ngIf="fields.length === 0 && !showFieldForm" class="empty-state">
+        <p>No fields defined yet. Click "Add Field" to create your first field.</p>
+    </div>
+
+    <div class="fields-list" *ngIf="fields.length > 0">
+        <div *ngFor="let field of fields; let i = index" class="field-item">
+            <div class="field-info">
+                <div class="field-header">
+                    <strong>{{ field.label }}</strong>
+                    <span class="field-key">{{ field.placeholder }}</span>
+                </div>
+                <div class="field-meta">
+                    <span class="field-type">{{ field.type }}</span>
+                    <span *ngIf="field.isRequired" class="field-required">Required</span>
+                    <span *ngIf="field.options && field.options.length > 0" class="field-options">
+                        {{ field.options.length }} options
+                    </span>
+                </div>
+            </div>
+            <div class="field-actions">
+                <button type="button" (click)="moveFieldUp(field)" [disabled]="i === 0" class="btn-icon" title="Move up">
+                    ↑
+                </button>
+                <button type="button" (click)="moveFieldDown(field)" [disabled]="i === fields.length - 1" class="btn-icon" title="Move down">
+                    ↓
+                </button>
+                <button type="button" (click)="editField(field)" class="btn-icon" title="Edit">
+                    ✏️
+                </button>
+                <button type="button" (click)="deleteField(field)" class="btn-icon btn-delete" title="Delete">
+                    🗑️
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="showFieldForm" class="field-form">
+        <h4>{{ editingField ? 'Edit Field' : 'Add New Field' }}</h4>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="fieldKey">Field Key *</label>
+                <input 
+                    id="fieldKey" 
+                    type="text" 
+                    [(ngModel)]="fieldKey" 
+                    placeholder="e.g., firstName"
+                    [ngModelOptions]="{standalone: true}">
+                <small>Used in code (no spaces, camelCase)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="label">Display Label *</label>
+                <input 
+                    id="label" 
+                    type="text" 
+                    [(ngModel)]="label" 
+                    placeholder="e.g., First Name"
+                    [ngModelOptions]="{standalone: true}">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="type">Field Type *</label>
+                <select id="type" [(ngModel)]="type" [ngModelOptions]="{standalone: true}">
+                    <option *ngFor="let ft of fieldTypes" [value]="ft.value">
+                        {{ ft.label }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="placeholder">Placeholder in Word *</label>
+                <input 
+                    id="placeholder" 
+                    type="text" 
+                    [(ngModel)]="placeholder" 
+                    placeholder="e.g., {{ '{' }}{{ '{' }}FirstName{{ '}' }}{{ '}' }}"
+                    [ngModelOptions]="{standalone: true}">
+                <small>Exact text in Word document</small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input 
+                    type="checkbox" 
+                    [(ngModel)]="isRequired"
+                    [ngModelOptions]="{standalone: true}">
+                Required Field
+            </label>
+        </div>
+
+        <div class="form-group" *ngIf="needsOptions()">
+            <label for="options">Options * (one per line)</label>
+            <textarea 
+                id="options" 
+                [(ngModel)]="optionsText" 
+                rows="4"
+                placeholder="Option 1&#10;Option 2&#10;Option 3"
+                [ngModelOptions]="{standalone: true}"></textarea>
+        </div>
+
+        <div class="field-form-actions">
+            <button type="button" (click)="cancelFieldForm()" class="btn-secondary">
+                Cancel
+            </button>
+            <button type="button" (click)="saveField()" class="btn-primary">
+                {{ editingField ? 'Update Field' : 'Add Field' }}
+            </button>
+        </div>
+    </div>
+</div>

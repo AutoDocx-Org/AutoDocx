@@ -21,16 +21,13 @@ public class DocumentsController : ControllerBase
         try
         {
             var wordDocument = await _documentService.GenerateWordDocumentAsync(request.TemplateId, request.Data);
-            var pdfDocument = await _documentService.ConvertToPdfAsync(wordDocument);
 
-            // Save generated documents temporarily
+            // Save generated Word document temporarily
             var documentId = Guid.NewGuid();
             var wordPath = Path.Combine("temp", $"{documentId}.docx");
-            var pdfPath = Path.Combine("temp", $"{documentId}.pdf");
 
             Directory.CreateDirectory("temp");
             await System.IO.File.WriteAllBytesAsync(wordPath, wordDocument);
-            await System.IO.File.WriteAllBytesAsync(pdfPath, pdfDocument);
 
             var response = new DocumentResponse
             {
@@ -52,8 +49,7 @@ public class DocumentsController : ControllerBase
     [HttpGet("{documentId}/download/{format}")]
     public async Task<IActionResult> Download(Guid documentId, string format)
     {
-        var extension = format.ToLower() == "word" ? "docx" : "pdf";
-        var filePath = Path.Combine("temp", $"{documentId}.{extension}");
+        var filePath = Path.Combine("temp", $"{documentId}.docx");
 
         if (!System.IO.File.Exists(filePath))
         {
@@ -61,24 +57,16 @@ public class DocumentsController : ControllerBase
         }
 
         var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-        var contentType = format.ToLower() == "word"
-            ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            : "application/pdf";
+        var contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        var fileName = format.ToLower() == "word" ? "document.docx" : "document.docx";
 
-        return File(fileBytes, contentType, $"document.{extension}");
+        return File(fileBytes, contentType, fileName);
     }
 
     [HttpGet("{documentId}/preview")]
-    public async Task<IActionResult> Preview(Guid documentId)
+    public IActionResult Preview(Guid documentId)
     {
-        var pdfPath = Path.Combine("temp", $"{documentId}.pdf");
-
-        if (!System.IO.File.Exists(pdfPath))
-        {
-            return NotFound();
-        }
-
-        var fileBytes = await System.IO.File.ReadAllBytesAsync(pdfPath);
-        return File(fileBytes, "application/pdf");
+        // Preview not available - PDF conversion not supported on macOS/Linux
+        return BadRequest(new { message = "Preview is not available on this platform. Please download the Word document instead." });
     }
 }

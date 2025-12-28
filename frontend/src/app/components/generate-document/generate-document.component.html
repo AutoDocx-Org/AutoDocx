@@ -1,0 +1,135 @@
+<div class="generate-document-container">
+    <div class="header">
+        <h1>Generate Document</h1>
+        <button (click)="backToTemplates()" class="btn-back">← Back to Templates</button>
+    </div>
+
+    <div *ngIf="loading" class="loading">Loading template...</div>
+
+    <div *ngIf="error" class="error-message">{{ error }}</div>
+
+    <div *ngIf="template && !loading" class="content">
+        <div class="template-info">
+            <h2>{{ template.name }}</h2>
+            <p *ngIf="template.description">{{ template.description }}</p>
+        </div>
+
+        <div class="document-form" *ngIf="!generated">
+            <h3>Fill in the form</h3>
+            
+            <form (ngSubmit)="generateDocument()">
+                <div *ngFor="let field of template.fields" class="form-group">
+                    <label [for]="field.fieldKey">
+                        {{ field.label }}
+                        <span *ngIf="field.isRequired" class="required">*</span>
+                    </label>
+
+                    <!-- Text Input -->
+                    <input 
+                        *ngIf="field.type === 'text'"
+                        [id]="field.fieldKey"
+                        [name]="field.fieldKey"
+                        type="text"
+                        [(ngModel)]="formData[field.fieldKey]"
+                        [required]="field.isRequired">
+
+                    <!-- Number Input -->
+                    <input 
+                        *ngIf="field.type === 'number'"
+                        [id]="field.fieldKey"
+                        [name]="field.fieldKey"
+                        type="number"
+                        [(ngModel)]="formData[field.fieldKey]"
+                        [required]="field.isRequired">
+
+                    <!-- Date Input -->
+                    <input 
+                        *ngIf="field.type === 'date'"
+                        [id]="field.fieldKey"
+                        [name]="field.fieldKey"
+                        type="date"
+                        [(ngModel)]="formData[field.fieldKey]"
+                        [required]="field.isRequired">
+
+                    <!-- Textarea -->
+                    <textarea 
+                        *ngIf="field.type === 'textarea'"
+                        [id]="field.fieldKey"
+                        [name]="field.fieldKey"
+                        rows="4"
+                        [(ngModel)]="formData[field.fieldKey]"
+                        [required]="field.isRequired"></textarea>
+
+                    <!-- Select Dropdown -->
+                    <select 
+                        *ngIf="field.type === 'select'"
+                        [id]="field.fieldKey"
+                        [name]="field.fieldKey"
+                        [(ngModel)]="formData[field.fieldKey]"
+                        [required]="field.isRequired">
+                        <option value="">-- Select --</option>
+                        <option *ngFor="let option of field.options" [value]="option">
+                            {{ option }}
+                        </option>
+                    </select>
+
+                    <!-- Radio Buttons -->
+                    <div *ngIf="field.type === 'radio'" class="radio-group">
+                        <label *ngFor="let option of field.options" class="radio-label">
+                            <input 
+                                type="radio"
+                                [name]="field.fieldKey"
+                                [value]="option"
+                                [(ngModel)]="formData[field.fieldKey]"
+                                [required]="field.isRequired">
+                            {{ option }}
+                        </label>
+                    </div>
+
+                    <!-- Checkbox -->
+                    <label *ngIf="field.type === 'checkbox'" class="checkbox-label">
+                        <input 
+                            type="checkbox"
+                            [name]="field.fieldKey"
+                            [(ngModel)]="formData[field.fieldKey]">
+                        {{ field.label }}
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary" [disabled]="generating">
+                        {{ generating ? 'Generating...' : 'Generate Document' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="document-preview" *ngIf="generated && documentResponse">
+            <h3>Document Generated!</h3>
+            
+            <div class="preview-container">
+                <iframe 
+                    *ngIf="previewUrl" 
+                    [src]="previewUrl" 
+                    class="preview-iframe">
+                </iframe>
+            </div>
+
+            <div class="download-actions">
+                <button (click)="downloadWord()" class="btn-download">
+                    📄 Download Word
+                </button>
+                <button (click)="downloadPdf()" class="btn-download">
+                    📑 Download PDF
+                </button>
+                <button (click)="reset()" class="btn-secondary">
+                    🔄 Generate Another
+                </button>
+            </div>
+
+            <p class="expiry-notice">
+                <small>Preview expires at: {{ documentResponse.expiresAt | date:'medium' }}</small>
+            </p>
+        </div>
+    </div>
+</div>

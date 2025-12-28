@@ -1,6 +1,7 @@
 using AutoDocx.Core.DTOs;
 using AutoDocx.Core.Entities;
 using AutoDocx.Core.Interfaces;
+using AutoDocx.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -12,11 +13,13 @@ public class TemplatesController : ControllerBase
 {
     private readonly ITemplateRepository _templateRepository;
     private readonly IStorageService _storageService;
+    private readonly AutoDocxDbContext _context;
 
-    public TemplatesController(ITemplateRepository templateRepository, IStorageService storageService)
+    public TemplatesController(ITemplateRepository templateRepository, IStorageService storageService, AutoDocxDbContext context)
     {
         _templateRepository = templateRepository;
         _storageService = storageService;
+        _context = context;
     }
 
     [HttpGet]
@@ -40,7 +43,7 @@ public class TemplatesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<TemplateResponse>> Create([FromForm] CreateTemplateRequest request, IFormFile wordFile)
+    public async Task<ActionResult<TemplateResponse>> Create([FromForm] string name, [FromForm] string? description, [FromForm] string fields, IFormFile wordFile)
     {
         if (wordFile == null || wordFile.Length == 0)
         {
@@ -53,6 +56,18 @@ public class TemplatesController : ControllerBase
             return BadRequest("Only .docx files are allowed");
         }
 
+        // Parse fields JSON
+        List<TemplateFieldDto> fieldsList;
+        try
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            fieldsList = JsonSerializer.Deserialize<List<TemplateFieldDto>>(fields, options) ?? new List<TemplateFieldDto>();
+        }
+        catch (JsonException)
+        {
+            return BadRequest("Invalid fields format");
+        }
+
         // Save file
         var fileName = $"{Guid.NewGuid()}.docx";
         var filePath = await _storageService.SaveFileAsync(fileName, wordFile.OpenReadStream());
@@ -60,10 +75,10 @@ public class TemplatesController : ControllerBase
         // Create template
         var template = new Template
         {
-            Name = request.Name,
-            Description = request.Description,
+            Name = name,
+            Description = description,
             WordFilePath = filePath,
-            Fields = request.Fields.Select(f => new TemplateField
+            Fields = fieldsList.Select(f => new TemplateField
             {
                 FieldKey = f.FieldKey,
                 Label = f.Label,
@@ -80,7 +95,7 @@ public class TemplatesController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<TemplateResponse>> Update(Guid id, [FromForm] CreateTemplateRequest request, IFormFile? wordFile)
+    public async Task<ActionResult<TemplateResponse>> Update(Guid id, [FromForm] string name, [FromForm] string? description, [FromForm] string fields, IFormFile? wordFile)
     {
         var template = await _templateRepository.GetByIdAsync(id);
         if (template == null)
@@ -88,34 +103,66 @@ public class TemplatesController : ControllerBase
             return NotFound();
         }
 
+        // Parse fields JSON
+        List<TemplateFieldDto> fieldsList;
+        try
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            fieldsList = JsonSerializer.Deserialize<List<TemplateFieldDto>>(fields, options) ?? new List<TemplateFieldDto>();
+        }
+        catch (JsonException)
+        {
+            return BadRequest("Invalid fields format");
+        }
+
         // Update word file if provided
         if (wordFile != null && wordFile.Length > 0)
         {
+            // Validate file type
+            if (!wordFile.ContentType.Equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))
+            {
+                return BadRequest("Only .docx files are allowed");
+            }
+
             // Delete old file
-            await _storageService.DeleteFileAsync(template.WordFilePath);
+            try
+            {
+                await _storageService.DeleteFileAsync(template.WordFilePath);
+            }
+            catch
+            {
+                // Ignore if old file doesn't exist
+            }
 
             // Save new file
             var fileName = $"{Guid.NewGuid()}.docx";
             template.WordFilePath = await _storageService.SaveFileAsync(fileName, wordFile.OpenReadStream());
         }
 
-        // Update template
-        template.Name = request.Name;
-        template.Description = request.Description;
+        // Update template properties
+        template.Name = name;
+        template.Description = description;
+        template.UpdatedAt = DateTime.UtcNow;
 
-        // Update fields
+        // Clear existing fields from database
+        _context.Entry(template).Collection(t => t.Fields).Load();
         template.Fields.Clear();
-        template.Fields = request.Fields.Select(f => new TemplateField
+        
+        // Add updated fields
+        foreach (var f in fieldsList)
         {
-            FieldKey = f.FieldKey,
-            Label = f.Label,
-            Type = f.Type,
-            IsRequired = f.IsRequired,
-            Placeholder = f.Placeholder,
-            Order = f.Order,
-            OptionsJson = f.Options != null ? JsonSerializer.Serialize(f.Options) : null,
-            TemplateId = id
-        }).ToList();
+            template.Fields.Add(new TemplateField
+            {
+                FieldKey = f.FieldKey,
+                Label = f.Label,
+                Type = f.Type,
+                IsRequired = f.IsRequired,
+                Placeholder = f.Placeholder,
+                Order = f.Order,
+                OptionsJson = f.Options != null ? JsonSerializer.Serialize(f.Options) : null,
+                TemplateId = id
+            });
+        }
 
         var updatedTemplate = await _templateRepository.UpdateAsync(template);
         return Ok(MapToResponse(updatedTemplate));

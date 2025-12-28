@@ -1,6 +1,6 @@
 .template-list-container {
     padding: 2rem;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -8,92 +8,161 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+
+    h1 {
+        color: #2d3748;
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
 }
 
 .templates-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
 }
 
 .template-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 1.5rem;
     background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+    border-radius: 12px;
+    padding: 1.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s;
+    border: 1px solid #e2e8f0;
 
-.template-card h3 {
-    margin: 0 0 0.5rem 0;
-    color: #333;
-}
+    &:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+        transform: translateY(-4px);
+    }
 
-.template-card p {
-    color: #666;
-    margin-bottom: 1rem;
+    h3 {
+        margin: 0 0 0.75rem 0;
+        color: #2d3748;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    p {
+        color: #718096;
+        margin-bottom: 1rem;
+        min-height: 2.5rem;
+        font-size: 0.95rem;
+    }
 }
 
 .template-meta {
     display: flex;
     justify-content: space-between;
-    font-size: 0.875rem;
-    color: #888;
-    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    color: #a0aec0;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+
+    span {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
 }
 
 .template-actions {
     display: flex;
     gap: 0.5rem;
+    flex-wrap: wrap;
+
+    button {
+        flex: 1;
+        min-width: 70px;
+        padding: 0.6rem 0.75rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.2s;
+
+        &:hover {
+            transform: translateY(-1px);
+        }
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.6rem 0.75rem;
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+
+        &:hover {
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+        }
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #4a5568;
+
+        &:hover {
+            background: #cbd5e0;
+        }
+    }
+
+    .btn-danger {
+        background: #fc8181;
+        color: white;
+
+        &:hover {
+            background: #f56565;
+        }
+    }
 }
 
-.btn-primary {
-    background: #3f51b5;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.btn-primary:hover {
-    background: #303f9f;
-}
-
-.btn-secondary {
-    background: #9e9e9e;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.btn-secondary:hover {
-    background: #757575;
-}
-
-.btn-danger {
-    background: #f44336;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.btn-danger:hover {
-    background: #d32f2f;
-}
-
-.loading,
-.error,
-.empty-state {
+.loading {
     text-align: center;
-    padding: 2rem;
+    padding: 4rem 2rem;
+    color: #718096;
+    font-size: 1.1rem;
 }
 
 .error {
-    color: #f44336;
+    background: #fff5f5;
+    color: #c53030;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border-left: 4px solid #fc8181;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 12px;
+    border: 2px dashed #cbd5e0;
+
+    p {
+        color: #718096;
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+    }
 }

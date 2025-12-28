@@ -72,9 +72,45 @@ public class DocumentService : IDocumentService
 
     public async Task<byte[]> ConvertToPdfAsync(byte[] wordDocument)
     {
-        // TODO: Implement PDF conversion using QuestPDF
-        // For now, return the Word document
         await Task.CompletedTask;
-        return wordDocument;
+        
+        // FreeSpire.Doc uses System.Drawing.Common which doesn't work on macOS/Linux
+        // For non-Windows platforms, we'll need a different solution
+        if (!OperatingSystem.IsWindows())
+        {
+            // Return the Word document as-is for now on non-Windows platforms
+            // In production, consider using:
+            // - LibreOffice in headless mode
+            // - Cloud-based conversion service (e.g., CloudConvert API)
+            // - Commercial library like Aspose.Words that supports cross-platform
+            return wordDocument;
+        }
+        
+        // Save the Word document to a temporary file
+        var tempWordPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.docx");
+        var tempPdfPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.pdf");
+
+        try
+        {
+            // Write Word document to temp file
+            await File.WriteAllBytesAsync(tempWordPath, wordDocument);
+
+            // Use Free Spire.Doc to convert (Windows only)
+            var document = new Spire.Doc.Document();
+            document.LoadFromFile(tempWordPath);
+            document.SaveToFile(tempPdfPath, Spire.Doc.FileFormat.PDF);
+
+            // Read the PDF file
+            var pdfBytes = await File.ReadAllBytesAsync(tempPdfPath);
+            return pdfBytes;
+        }
+        finally
+        {
+            // Clean up temporary files
+            if (File.Exists(tempWordPath))
+                File.Delete(tempWordPath);
+            if (File.Exists(tempPdfPath))
+                File.Delete(tempPdfPath);
+        }
     }
 }
