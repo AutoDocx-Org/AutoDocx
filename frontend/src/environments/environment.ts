@@ -1,4 +1,4 @@
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:5000/api'
+    apiUrl: 'http://chetandeo-001-site1.stempurl.com/api'
 };
