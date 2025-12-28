@@ -1,4 +1,4 @@
 export const environment = {
     production: true,
-    apiUrl: 'https://api.autodocx.com/api'
+    apiUrl: 'http://chetandeo-001-site1.stempurl.com/api'
 };
