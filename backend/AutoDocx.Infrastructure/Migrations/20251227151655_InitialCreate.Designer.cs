@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AutoDocx.Infrastructure.Migrations
 {
     [DbContext(typeof(AutoDocxDbContext))]
-    [Migration("20251225093835_InitialCreate")]
+    [Migration("20251227151655_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

@@ -47,5 +47,15 @@ Open http://localhost:5000/swagger in your browser to see and test all your API 
 
 # To run the frontend:
 cd frontend
-npm install
+npm install --legacy-peer-deps
 npm start
+
+# Frontend is available at:
+http://localhost:4200
+
+# Features:
+✅ Template Management (Create, Edit, Delete, List)
+✅ Dynamic Field Builder (Add/Edit/Remove fields)
+✅ Document Generation with Dynamic Forms
+✅ Preview Generated Documents
+✅ Download Word & PDF Documents
