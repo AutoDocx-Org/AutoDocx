@@ -1,0 +1,24 @@
+name: Build Angular Web Core
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-angular:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v6
+        with:
+            node-version: 18.x
+
+      - name: Install dependencies
+        working-directory: ./frontend
+        run: npm install
+
+      - name: Build
+        working-directory: ./frontend
+        run: npm run build
